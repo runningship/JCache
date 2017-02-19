@@ -23,7 +23,7 @@ public class KyroTransferClient {
     private KodoCLI cli;
     
     private KyroClientHandler clientHandler;
-    
+    EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
     public KyroTransferClient(String host, int port) {
         this.host = host;
         this.port = port;
@@ -32,7 +32,6 @@ public class KyroTransferClient {
     public void start() throws InterruptedException, IOException {
 
         Bootstrap bootstrap = new Bootstrap();
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
         clientHandler = new KyroClientHandler();
         try {
             bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
@@ -47,11 +46,12 @@ public class KyroTransferClient {
 
             future = bootstrap.connect(host, port).sync();
             cli = new KodoCLI();
+            cli.setKodoClient(this);
             cli.start();
-//            future.channel().closeFuture().sync();
+            future.channel().closeFuture().sync();
 //            future.channel().close();
         } finally {
-            eventLoopGroup.shutdownGracefully();
+            
         }
     }
 
@@ -72,12 +72,20 @@ public class KyroTransferClient {
     
     public void stop(){
         future.channel().close();
+        eventLoopGroup.shutdownGracefully();
     }
     public static void main(String[] args) throws Exception {
 
         CacheData message = new CacheData();
         message.setKey("test-car");
         message.setData("bmw".getBytes());
-        new KyroTransferClient("192.168.23.240", 9527).start();
+        new KyroTransferClient("192.168.16.103", 9527).start();
     }
+
+	public void remove(String key) {
+		CacheData data = new CacheData();
+        data.setKey(key);
+        data.setCmd("remvoe");
+        clientHandler.send(data);
+	}
 }

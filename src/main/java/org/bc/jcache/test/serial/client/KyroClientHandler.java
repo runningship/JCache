@@ -1,5 +1,7 @@
 package org.bc.jcache.test.serial.client;
 
+import org.bc.jcache.test.serial.CacheData;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -17,8 +19,8 @@ public class KyroClientHandler extends ChannelInboundHandlerAdapter{
     public void channelRead(ChannelHandlerContext ctx, Object msg)
             throws Exception {
         // you can use the Object from Server here
-        System.out.println("client receive msg:"+msg);
-        ctx.close();
+    	CacheData resp = (CacheData)msg;
+        System.out.println(resp.getData());
     }
 
     @Override

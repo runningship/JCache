@@ -1,17 +1,34 @@
 package org.bc.jcache.test.serial;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public class KyroServerHandler extends ChannelInboundHandlerAdapter{
 
+	private Map<String,Object> store = new HashMap<String,Object>();
+	
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)
             throws Exception {
         CacheData data = (CacheData)msg;
-        System.out.println("server receive msg:"+msg);
-
-//        ctx.writeAndFlush(car);
+        if("put".equals(data.getCmd())){
+        	store.put(data.getKey(),data.getData());
+        	System.out.println("server store data:"+msg);
+        }else if("get".equals(data.getCmd())){
+        	CacheData result = new CacheData();
+        	result.setData(store.get(data.getKey()));
+        	result.setCmd("result");
+        	result.setKey(data.getKey());
+        	ctx.writeAndFlush(result);
+        }else if("remove".equals(data.getCmd())){
+        	store.remove(data.getKey());
+        	CacheData result = new CacheData();
+        	result.setData("removed");
+        }
+        
     }
 
     @Override
@@ -24,13 +41,13 @@ public class KyroServerHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        System.out.println("ÐÂµÄ¿Í»§¶ËÁ¬½ÓÉÏÀ´:"+ctx.channel().remoteAddress());
+        System.out.println("æ”¶åˆ°å®¢æˆ·ç«¯è¿žæŽ¥"+ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        System.out.println("¿Í»§¶Ë¶Ï¿ªÁ¬½Ó:"+ctx.channel().remoteAddress());
+        System.out.println("å®¢æˆ·ç«¯è¿žæŽ¥æ–­å¼€:"+ctx.channel().remoteAddress());
     }
     
     

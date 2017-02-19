@@ -31,7 +31,9 @@ public class KyroTransferServer {
                     });
 
             // Bind and start to accept incoming connections.
+            System.out.println("服务端启动,port:"+port);
             b.bind(port).sync().channel().closeFuture().sync();
+            
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
